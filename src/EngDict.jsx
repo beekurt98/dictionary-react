@@ -1,9 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import './App.css'
-import { dictSvg, searchSvg, moonSvg, playSvg } from './Svg.jsx'
+import { dictSvg, searchSvg, moonSvg, playSvg, linkOpenSvg } from './Svg.jsx'
 
-// todo: font change
-// light dark mode
 
 const url = 'https://api.dictionaryapi.dev/api/v2/entries/en/'
 
@@ -76,7 +74,7 @@ function App() {
       </div>
       {
         searched && word ? <>
-          <WordMeaning word={word} />
+          <WordMeaning word={word} setWord={setWord} setSearched={setSearched} />
         </>
           : searched && !word ? <WordNotFound />
             : ""
@@ -85,19 +83,33 @@ function App() {
   )
 }
 
-function WordMeaning({ word }) {
+function WordMeaning({ word, setWord, setSearched }) {
   const [audioOn, setAudio] = useState(false)
+  const [noAudio, setNoAudio] = useState(false)
 
-  let audio = new Audio(word.phonetics[1].audio)
-  console.log(word.phonetics[1].audio)
+  let audio;
+
+  // if (word.phonetics[1]?.audio) {
+  //   audio = new Audio(word.phonetics[1]?.audio)
+  // }
 
   function start() {
-    setAudio(true);
-    audio.play()
+    if (!word.phonetics[1]?.audio) {
+      setNoAudio(true)
+    } else {
+      setAudio(true);
+      audio.play()
+    }
   }
 
   function pause() {
     audio.pause()
+  }
+
+  async function handleClick(word) {
+    const wordData = await fetch(url + word).then(r => r.json())
+    setWord(wordData[0])
+    setSearched(true)
   }
 
   return (
@@ -105,9 +117,17 @@ function WordMeaning({ word }) {
       <div className="word-meaning">
         <div className="word-header">
           <h2>{word.word}</h2>
-          <p className='ipa'>{word.phonetics[1].text}</p>
-          <button className='play-btn' onClick={() => start()}><div>{playSvg}</div></button>
-          {/* <button onClick={() => pause()}>Pause</button> */}
+          <p className='ipa'>{word.phonetics[1]?.text}</p>
+          <div className='play-btn' onClick={() => start()}> 
+            <div className='circle'></div> 
+            <div className='triangle'>{playSvg}</div>
+          </div>
+          {/* {
+            noAudio && 
+            <div className="no-audio">
+              No audio available.
+            </div>
+          } */}
 
         </div>
         <div>
@@ -123,19 +143,27 @@ function WordMeaning({ word }) {
                 <ul>
                   {
                     meaning?.definitions.map((def, index) =>
-                      <li key={index * 99}>{def.definition}</li>
+                      <li key={index * 99}>
+                        <p>{def.definition}</p>
+                        {
+                          meaning.example &&
+                          <p className='h4'>{meaning?.example}</p>
+                        }
+                      </li>
                     )
                   }
                 </ul>
                 {
                   meaning.synonyms.length != 0 &&
-                  <div className='syn'><p className='h4'>Synonyms</p> <a className='synoynm'>{meaning.synonyms[0]}</a></div>
+                  <div className='syn'><p className='h4'>Synonyms</p> <a onClick={() => handleClick(meaning.synonyms[0])} className='synoynm'>{meaning.synonyms[0]}</a></div>
                 }
               </div>
-            </div>)
+            </div>
+            )
           }
         </div>
-        <p></p>
+        <hr />
+        <p className='source'><span>Source</span> <a target="_blank" href={word.sourceUrls}>{word.sourceUrls}</a> {linkOpenSvg}</p>
       </div>
     </>
   )

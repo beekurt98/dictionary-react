@@ -123,11 +123,20 @@ h2 {
   height: 20px;
   margin: auto;
   border: none;
+}
+
+.circle {
   height: 48px;
   width: 48px;
   border-radius: 50%;
   background-color: hsl(274, 82%, 60%);
-  /* opacity: 25%; */
+  opacity: 25%;
+}
+
+.triangle {
+  position: relative;
+  left: 20px;
+  bottom: 32px;
 }
 
 ul {
@@ -293,7 +302,17 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
-@media screen and (min-width: 780px) {
+.source {
+  span {
+    text-decoration: underline;
+    color: var(--darkMedGray);
+  }
+  a, a:active {
+    color: var(--fontDarkGray);
+  }
+}
+
+@media screen and (min-width: 1020px) {
   #root {
     width: 40%;
     margin: auto;
